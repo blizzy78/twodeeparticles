@@ -1,6 +1,7 @@
 package twodeeparticles
 
 import (
+	"image/color"
 	"sync"
 	"time"
 )
@@ -56,6 +57,11 @@ type ParticleSystem struct {
 	// If ScaleOverLifetime is nil, particles will use (1.0,1.0).
 	ScaleOverLifetime ParticleTwoValuesOverNormalizedTimeFunc
 
+	// ColorOverLifetime returns a particle's color, over its lifetime.
+	//
+	// If ColorOverLifetime is nil, particles will use color.White.
+	ColorOverLifetime ParticleColorOverNormalizedTimeFunc
+
 	// RotationOverLifetime returns a particle's angular velocity, in radians, over its lifetime.
 	//
 	// If RotationOverLifetime is nil, particles will not rotate.
@@ -91,6 +97,10 @@ type ParticleValueOverNormalizedTimeFunc func(p *Particle, t NormalizedDuration,
 // ParticleTwoValuesOverNormalizedTimeFunc is a function that returns two values for p after p's duration t has passed.
 // delta is the duration since the last update (for example, the duration since the last GPU frame.)
 type ParticleTwoValuesOverNormalizedTimeFunc func(p *Particle, t NormalizedDuration, delta time.Duration) (float64, float64)
+
+// ParticleColorOverNormalizedTimeFunc is a function that returns a color for p after p's duration t has passed.
+// delta is the duration since the last update (for example, the duration since the last GPU frame.)
+type ParticleColorOverNormalizedTimeFunc func(p *Particle, t NormalizedDuration, delta time.Duration) color.Color
 
 // ParticleDataOverNormalizedTimeFunc is a function that returns arbitrary data for p after p's duration t has passed.
 // The data from previous updates is passed as old and may be modified and returned. For the first update, nil is

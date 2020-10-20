@@ -1,6 +1,7 @@
 package twodeeparticles
 
 import (
+	"image/color"
 	"math"
 	"time"
 )
@@ -22,11 +23,13 @@ type Particle struct {
 	xScale    float64
 	yScale    float64
 	angle     float64
+	color     color.Color
 }
 
 func newParticle(s *ParticleSystem) *Particle {
 	return &Particle{
 		system: s,
+		color:  color.White,
 	}
 }
 
@@ -62,6 +65,11 @@ func (p *Particle) Angle() float64 {
 	return p.angle
 }
 
+// Color returns p's current color.
+func (p *Particle) Color() color.Color {
+	return p.color
+}
+
 // Lifetime returns p's maximum lifetime.
 func (p *Particle) Lifetime() time.Duration {
 	return p.lifetime
@@ -86,6 +94,7 @@ func (p *Particle) reset() {
 	p.x, p.y = 0, 0
 	p.xVelocity, p.yVelocity = 0.0, 0.0
 	p.xScale, p.yScale = 1.0, 1.0
+	p.color = color.White
 }
 
 func (p *Particle) update(now time.Time) {
@@ -124,5 +133,9 @@ func (p *Particle) update(now time.Time) {
 		} else if p.angle < 0 {
 			p.angle += 2.0 * math.Pi
 		}
+	}
+
+	if p.system.ColorOverLifetime != nil {
+		p.color = p.system.ColorOverLifetime(p, t, delta)
 	}
 }
