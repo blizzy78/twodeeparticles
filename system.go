@@ -28,7 +28,7 @@ type ParticleSystem struct {
 	// conditions are met.
 	UpdateFunc ParticleVisitFunc
 
-	// EmissionRateOverTime returns the emission rate of the system, in particles/sec, over the duration of the system.
+	// EmissionRateOverTime returns the emission rate of the system, in particles/second, over the duration of the system.
 	//
 	// If EmissionRateOverTime is nil, no particles will spawn.
 	EmissionRateOverTime ValueOverTimeFunc
@@ -40,10 +40,10 @@ type ParticleSystem struct {
 	// If EmissionPositionOverTime is nil, particles will spawn at the origin.
 	EmissionPositionOverTime TwoValuesOverTimeFunc
 
-	// LifetimeOverTime returns the lifetime of a particle that is being spawned, in seconds, over the duration of the
-	// system. After the particle has lived for that many seconds, it will die automatically.
+	// LifetimeOverTime returns the lifetime of a particle that is being spawned, over the duration of the system.
+	// After the duration has passed, the particle will die automatically.
 	//
-	// If LifetimeOverTime is nil, particles will die after 1 sec.
+	// If LifetimeOverTime is nil, particles will die after 1 second.
 	LifetimeOverTime DurationOverTimeFunc
 
 	// VelocityOverLifetime returns a particle's velocity (direction times speed), in arbitrary units per second,
