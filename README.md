@@ -9,7 +9,7 @@ twodeeparticles
 ![Demo](demo.gif)
 
 twodeeparticles does not render particles itself. Any rendering engine can be used, for example [Ebiten].
-For a demo program using Ebiten, see [cmd/demo](https://github.com/blizzy78/twodeeparticles/tree/master/cmd/demo).
+For a demo program using Ebiten, see [_demo](https://github.com/blizzy78/twodeeparticles/tree/master/_demo).
 
 
 License

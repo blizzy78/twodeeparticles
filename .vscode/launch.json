@@ -9,11 +9,10 @@
 			"type": "go",
 			"request": "launch",
 			"mode": "auto",
-			"program": "${workspaceFolder}/cmd/demo",
-			"cwd": "${workspaceFolder}/cmd/demo",
+			"program": "${workspaceFolder}/_demo",
+			"cwd": "${workspaceFolder}/_demo",
 			"env": {},
-			"args": [],
-			"buildFlags": "-tags=demo"
+			"args": []
 		}
 	]
 }

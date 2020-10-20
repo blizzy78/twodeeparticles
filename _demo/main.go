@@ -1,9 +1,8 @@
-// +build demo
-
 package main
 
 import (
 	"fmt"
+	"image/color"
 	_ "image/png"
 	"math"
 	"math/rand"
@@ -40,7 +39,7 @@ const (
 	minRotationAngle = 100.0
 	maxRotationAngle = minRotationAngle * 2.0
 
-	minAlpha = 0.5
+	minAlpha = 0.35
 )
 
 type game struct {
@@ -142,16 +141,8 @@ func (g *game) drawParticle(screen *ebiten.Image, p *twodeeparticles.Particle, t
 
 	g.drawOpts.GeoM.Translate(float64(originX), float64(originY))
 
-	s := t.Duration(p.Lifetime()).Seconds()
-	moveTime := p.Lifetime().Seconds() - fadeOutTime
-
-	if bd, ok := p.Data().(*bubbleData); ok {
-		if s <= moveTime {
-			g.drawOpts.ColorM.Scale(1.0, 1.0, 1.0, bd.alpha*float64(t))
-		} else {
-			g.drawOpts.ColorM.Scale(1.0, 1.0, 1.0, bd.alpha*(1.0-((s-moveTime)/fadeOutTime)))
-		}
-	}
+	_, _, _, a := p.Color().RGBA()
+	g.drawOpts.ColorM.Scale(1.0, 1.0, 1.0, float64(a)/65535.0)
 
 	g.drawOpts.Filter = ebiten.FilterLinear
 
@@ -174,9 +165,9 @@ func bubbles(rand *rand.Rand) *twodeeparticles.ParticleSystem {
 		}
 
 		data := particleDataPool.Get().(*bubbleData)
-		data.speed = startSpeed + (rand.Float64()-0.5)*startSpeedVariance
-		data.alpha = minAlpha + rand.Float64()*(1.0-minAlpha)
-		data.endScale = endScale + (rand.Float64()-0.5)*endScaleVariance
+		data.speed = randomValue(startSpeed-startSpeedVariance/2.0, startSpeed+startSpeedVariance/2.0, rand)
+		data.endScale = randomValue(endScale-endScaleVariance/2.0, endScale+endScaleVariance/2.0, rand)
+		data.alpha = randomValue(minAlpha, 1.0, rand)
 		return data
 	}
 
@@ -197,7 +188,7 @@ func bubbles(rand *rand.Rand) *twodeeparticles.ParticleSystem {
 	}
 
 	s.LifetimeOverTime = func(d time.Duration, delta time.Duration) time.Duration {
-		mt := moveTime + (rand.Float64()-0.5)*moveTimeVariance
+		mt := randomValue(moveTime-moveTimeVariance/2.0, moveTime+moveTimeVariance/2.0, rand)
 		return time.Duration((mt+fadeOutTime)*1000.0) * time.Millisecond
 	}
 
@@ -238,6 +229,17 @@ func bubbles(rand *rand.Rand) *twodeeparticles.ParticleSystem {
 		return m, m
 	}
 
+	s.ColorOverLifetime = func(p *twodeeparticles.Particle, t twodeeparticles.NormalizedDuration, delta time.Duration) color.Color {
+		data := p.Data().(*bubbleData)
+		s := t.Duration(p.Lifetime()).Seconds()
+		moveTime := p.Lifetime().Seconds() - fadeOutTime
+		if s <= moveTime {
+			return color.RGBA{255, 255, 255, uint8(data.alpha * float64(t) * 255.0)}
+		}
+
+		return color.RGBA{255, 255, 255, uint8(data.alpha * (1.0 - ((s - moveTime) / fadeOutTime)) * 255)}
+	}
+
 	return s
 }
 
@@ -255,7 +257,7 @@ func fountain(rand *rand.Rand) *twodeeparticles.ParticleSystem {
 
 		if t == 0 {
 			a := 2.0 * math.Pi * randomValue(80.0, 100.0, rand) / 360.0
-			s := 450.0 + (rand.Float64()-0.5)*50.0
+			s := randomValue(450.0-25.0, 450.0+25.0, rand)
 			dx, dy := angleToVector(a)
 			vx, vy = dx*s, dy*s
 		} else {
@@ -268,6 +270,14 @@ func fountain(rand *rand.Rand) *twodeeparticles.ParticleSystem {
 	}
 
 	s.ScaleOverLifetime = particleTwoConstants(0.2, 0.2)
+
+	s.ColorOverLifetime = func(p *twodeeparticles.Particle, t twodeeparticles.NormalizedDuration, delta time.Duration) color.Color {
+		if t == 0 {
+			return color.RGBA{255, 255, 255, uint8(randomValue(minAlpha, 1.0, rand) * 255.0)}
+		}
+
+		return p.Color()
+	}
 
 	s.UpdateFunc = func(p *twodeeparticles.Particle, t twodeeparticles.NormalizedDuration, delta time.Duration) {
 		if t < 0.1 {
@@ -322,6 +332,14 @@ func vortex(rand *rand.Rand) *twodeeparticles.ParticleSystem {
 		}
 
 		return p.Scale()
+	}
+
+	s.ColorOverLifetime = func(p *twodeeparticles.Particle, t twodeeparticles.NormalizedDuration, delta time.Duration) color.Color {
+		if t == 0 {
+			return color.RGBA{255, 255, 255, uint8(randomValue(minAlpha, 1.0, rand) * 255.0)}
+		}
+
+		return p.Color()
 	}
 
 	return s

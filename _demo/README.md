@@ -4,5 +4,6 @@ twodeeparticles Ebiten Demo
 To run this demo:
 
 ```
-go run -tags=demo .
+cd _demo/
+go run .
 ```
