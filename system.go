@@ -38,7 +38,7 @@ type ParticleSystem struct {
 	// system's origin.
 	//
 	// If EmissionPositionOverTime is nil, particles will spawn at the origin.
-	EmissionPositionOverTime TwoValuesOverTimeFunc
+	EmissionPositionOverTime VectorOverTimeFunc
 
 	// LifetimeOverTime returns the lifetime of a particle that is being spawned, over the duration of the system.
 	// After the duration has passed, the particle will die automatically.
@@ -50,12 +50,12 @@ type ParticleSystem struct {
 	// over its lifetime.
 	//
 	// If VelocityOverLifetime is nil, particles will not move.
-	VelocityOverLifetime ParticleTwoValuesOverNormalizedTimeFunc
+	VelocityOverLifetime ParticleVectorOverNormalizedTimeFunc
 
 	// ScaleOverLifetime returns a particle's scale (size multiplier), over its lifetime.
 	//
 	// If ScaleOverLifetime is nil, particles will use (1.0,1.0).
-	ScaleOverLifetime ParticleTwoValuesOverNormalizedTimeFunc
+	ScaleOverLifetime ParticleVectorOverNormalizedTimeFunc
 
 	// ColorOverLifetime returns a particle's color, over its lifetime.
 	//
@@ -82,9 +82,9 @@ type ParticleDeathFunc func(p *Particle)
 // delta is the duration since the last update (for example, the duration since the last GPU frame.)
 type ValueOverTimeFunc func(d time.Duration, delta time.Duration) float64
 
-// TwoValuesOverTimeFunc is a function that returns two values after duration d has passed.
+// VectorOverTimeFunc is a function that returns a vector after duration d has passed.
 // delta is the duration since the last update (for example, the duration since the last GPU frame.)
-type TwoValuesOverTimeFunc func(d time.Duration, delta time.Duration) (float64, float64)
+type VectorOverTimeFunc func(d time.Duration, delta time.Duration) Vector
 
 // DurationOverTimeFunc is a function that returns a duration after duration d has passed.
 // delta is the duration since the last update (for example, the duration since the last GPU frame.)
@@ -94,9 +94,9 @@ type DurationOverTimeFunc func(d time.Duration, delta time.Duration) time.Durati
 // delta is the duration since the last update (for example, the duration since the last GPU frame.)
 type ParticleValueOverNormalizedTimeFunc func(p *Particle, t NormalizedDuration, delta time.Duration) float64
 
-// ParticleTwoValuesOverNormalizedTimeFunc is a function that returns two values for p after p's duration t has passed.
+// ParticleVectorOverNormalizedTimeFunc is a function that returns a vector for p after p's duration t has passed.
 // delta is the duration since the last update (for example, the duration since the last GPU frame.)
-type ParticleTwoValuesOverNormalizedTimeFunc func(p *Particle, t NormalizedDuration, delta time.Duration) (float64, float64)
+type ParticleVectorOverNormalizedTimeFunc func(p *Particle, t NormalizedDuration, delta time.Duration) Vector
 
 // ParticleColorOverNormalizedTimeFunc is a function that returns a color for p after p's duration t has passed.
 // delta is the duration since the last update (for example, the duration since the last GPU frame.)
@@ -211,7 +211,7 @@ func (s *ParticleSystem) spawnParticle(now time.Time) {
 	p.lastUpdateTime = now
 
 	if s.EmissionPositionOverTime != nil {
-		p.x, p.y = s.EmissionPositionOverTime(d, delta)
+		p.position = s.EmissionPositionOverTime(d, delta)
 	}
 
 	s.particles = append(s.particles, p)

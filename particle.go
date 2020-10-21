@@ -14,16 +14,13 @@ type Particle struct {
 	deathTime      time.Time
 	lastUpdateTime time.Time
 
-	isAlive   bool
-	data      interface{}
-	x         float64
-	y         float64
-	xVelocity float64
-	yVelocity float64
-	xScale    float64
-	yScale    float64
-	angle     float64
-	color     color.Color
+	isAlive  bool
+	data     interface{}
+	position Vector
+	velocity Vector
+	scale    Vector
+	angle    float64
+	color    color.Color
 }
 
 func newParticle(s *ParticleSystem) *Particle {
@@ -45,19 +42,19 @@ func (p *Particle) Data() interface{} {
 
 // Position returns p's current position, in arbitrary units (for example, in pixels), relative to its
 // system's origin.
-func (p *Particle) Position() (float64, float64) {
-	return p.x, p.y
+func (p *Particle) Position() Vector {
+	return p.position
 }
 
 // Velocity returns p's current velocity (direction times speed), in arbitrary units (for example, in pixels)
 // per second.
-func (p *Particle) Velocity() (float64, float64) {
-	return p.xVelocity, p.yVelocity
+func (p *Particle) Velocity() Vector {
+	return p.velocity
 }
 
 // Scale returns p's current scale (size multiplier).
-func (p *Particle) Scale() (float64, float64) {
-	return p.xScale, p.yScale
+func (p *Particle) Scale() Vector {
+	return p.scale
 }
 
 // Angle returns p's current rotation angle, in radians.
@@ -91,9 +88,9 @@ func (p *Particle) alive(now time.Time) bool {
 func (p *Particle) reset() {
 	p.isAlive = true
 	p.data = nil
-	p.x, p.y = 0, 0
-	p.xVelocity, p.yVelocity = 0.0, 0.0
-	p.xScale, p.yScale = 1.0, 1.0
+	p.position = ZeroVector
+	p.velocity = ZeroVector
+	p.scale = OneVector
 	p.color = color.White
 }
 
@@ -115,15 +112,14 @@ func (p *Particle) update(now time.Time) {
 	}
 
 	if p.system.VelocityOverLifetime != nil {
-		p.xVelocity, p.yVelocity = p.system.VelocityOverLifetime(p, t, delta)
+		p.velocity = p.system.VelocityOverLifetime(p, t, delta)
 	}
 
 	sec := delta.Seconds()
-	p.x += p.xVelocity * sec
-	p.y += p.yVelocity * sec
+	p.position = p.position.Add(p.velocity.Mul(sec))
 
 	if p.system.ScaleOverLifetime != nil {
-		p.xScale, p.yScale = p.system.ScaleOverLifetime(p, t, delta)
+		p.scale = p.system.ScaleOverLifetime(p, t, delta)
 	}
 
 	if p.system.RotationOverLifetime != nil {
