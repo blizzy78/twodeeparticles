@@ -15,7 +15,7 @@ var (
 
 var errNormalizeZeroVector = errors.New("normalize zero vector")
 
-// A Vector is a geometric entity that has a direction and a magnitude.
+// A Vector is a geometric entity that has a direction and a length.
 type Vector struct {
 	X float64
 	Y float64
@@ -27,6 +27,7 @@ func (v Vector) Magnitude() float64 {
 }
 
 // Normalize returns a vector that has the same direction as v, but whose length is one.
+// In other words, it returns a unit vector with the same direction as v.
 func (v Vector) Normalize() Vector {
 	m := v.Magnitude()
 	if m == 0 {
