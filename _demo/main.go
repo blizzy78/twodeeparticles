@@ -69,6 +69,8 @@ var demos = []demo{
 	{"Vortex", vortex, 0.5, 0.5},
 }
 
+var gravity = twodeeparticles.Vector{0.0, 9.81}
+
 func main() {
 	dot, _, err := ebitenutil.NewImageFromFile("bubble.png")
 	if err != nil {
@@ -264,7 +266,7 @@ func fountain(rand *rand.Rand) *twodeeparticles.ParticleSystem {
 			v = p.Velocity()
 		}
 
-		return v.Add(twodeeparticles.Vector{0.0, 9.81 * 30.0}.Mul(delta.Seconds()))
+		return v.Add(gravity.Mul(30.0 * delta.Seconds()))
 	}
 
 	s.ScaleOverLifetime = particleConstantVector(twodeeparticles.Vector{0.2, 0.2})
