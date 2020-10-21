@@ -41,7 +41,7 @@ func (v Vector) Add(v2 Vector) Vector {
 	return Vector{v.X + v2.X, v.Y + v2.Y}
 }
 
-// Mul returns a vector whose components are v's components multiplied by d.
-func (v Vector) Mul(d float64) Vector {
+// Multiply returns a vector whose components are v's components multiplied by d.
+func (v Vector) Multiply(d float64) Vector {
 	return Vector{v.X * d, v.Y * d}
 }

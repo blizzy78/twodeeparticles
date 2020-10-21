@@ -186,7 +186,7 @@ func bubbles(rand *rand.Rand) *twodeeparticles.ParticleSystem {
 	s.EmissionPositionOverTime = func(d time.Duration, delta time.Duration) twodeeparticles.Vector {
 		a := randomValue(0.0, 360.0, rand)
 		dir := angleToDirection(a)
-		return dir.Mul(startPositionMaxDistance)
+		return dir.Multiply(startPositionMaxDistance)
 	}
 
 	s.LifetimeOverTime = func(d time.Duration, delta time.Duration) time.Duration {
@@ -201,7 +201,7 @@ func bubbles(rand *rand.Rand) *twodeeparticles.ParticleSystem {
 		if s == 0 {
 			a := randomValue(0.0, 360.0, rand)
 			dir := angleToDirection(a)
-			return dir.Mul(data.speed)
+			return dir.Multiply(data.speed)
 		}
 
 		moveTime := p.Lifetime().Seconds() - fadeOutTime
@@ -211,7 +211,7 @@ func bubbles(rand *rand.Rand) *twodeeparticles.ParticleSystem {
 
 		dir := p.Velocity().Normalize()
 		m := 1.0 - ease.OutSine(s/moveTime)
-		return dir.Mul(data.speed * m)
+		return dir.Multiply(data.speed * m)
 	}
 
 	s.ScaleOverLifetime = func(p *twodeeparticles.Particle, t twodeeparticles.NormalizedDuration, delta time.Duration) twodeeparticles.Vector {
@@ -261,12 +261,12 @@ func fountain(rand *rand.Rand) *twodeeparticles.ParticleSystem {
 			a := 2.0 * math.Pi * randomValue(80.0, 100.0, rand) / 360.0
 			s := randomValue(450.0-25.0, 450.0+25.0, rand)
 			dir := angleToDirection(a)
-			v = dir.Mul(s)
+			v = dir.Multiply(s)
 		} else {
 			v = p.Velocity()
 		}
 
-		return v.Add(gravity.Mul(30.0 * delta.Seconds()))
+		return v.Add(gravity.Multiply(30.0 * delta.Seconds()))
 	}
 
 	s.ScaleOverLifetime = particleConstantVector(twodeeparticles.Vector{0.2, 0.2})
@@ -301,14 +301,14 @@ func vortex(rand *rand.Rand) *twodeeparticles.ParticleSystem {
 		a := randomValue(0.0, 360.0, rand)
 		dir := angleToDirection(a)
 		dist := randomValue(140.0, 160.0, rand)
-		return dir.Mul(dist)
+		return dir.Multiply(dist)
 	}
 
 	s.VelocityOverLifetime = func(p *twodeeparticles.Particle, t twodeeparticles.NormalizedDuration, delta time.Duration) twodeeparticles.Vector {
 		if t == 0 {
 			dir := p.Position().Normalize()
 			dir = rotate(dir, 2.0*math.Pi*-90.0/360.0)
-			return dir.Mul(200.0)
+			return dir.Multiply(200.0)
 		}
 
 		v := p.Velocity()
@@ -316,7 +316,7 @@ func vortex(rand *rand.Rand) *twodeeparticles.ParticleSystem {
 		dir := v.Normalize()
 		a := randomValue(105.0, 115.0, rand)
 		dir = rotate(dir, 2.0*math.Pi*-a/360.0*delta.Seconds())
-		return dir.Mul(s)
+		return dir.Multiply(s)
 	}
 
 	s.ScaleOverLifetime = func(p *twodeeparticles.Particle, t twodeeparticles.NormalizedDuration, delta time.Duration) twodeeparticles.Vector {

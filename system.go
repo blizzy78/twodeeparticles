@@ -12,7 +12,7 @@ import (
 // own frame of reference. Particles are not simulated in "world space." However, when particles are actually drawn on screen,
 // the origin of the particle system can be moved freely, thus emulating a simulation in world space.
 type ParticleSystem struct {
-	// MaxParticles limits the total number of particles that are alive at a time. When particles die, new particles may be
+	// MaxParticles limits the total number of particles being alive at a time. When particles die, new particles may be
 	// spawned according to EmissionRateOverTime.
 	MaxParticles int
 

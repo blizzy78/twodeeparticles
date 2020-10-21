@@ -116,7 +116,7 @@ func (p *Particle) update(now time.Time) {
 	}
 
 	sec := delta.Seconds()
-	p.position = p.position.Add(p.velocity.Mul(sec))
+	p.position = p.position.Add(p.velocity.Multiply(sec))
 
 	if p.system.ScaleOverLifetime != nil {
 		p.scale = p.system.ScaleOverLifetime(p, t, delta)
