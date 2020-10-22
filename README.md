@@ -18,5 +18,4 @@ License
 twodeeparticles is licensed under the MIT license.
 
 
-
 [Ebiten]: https://ebiten.org/
