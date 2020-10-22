@@ -36,10 +36,12 @@ const (
 	endScale         = 0.65
 	endScaleVariance = 0.3
 
-	minRotationAngle = 100.0
-	maxRotationAngle = minRotationAngle * 2.0
-
 	minAlpha = 0.35
+)
+
+const (
+	windowWidth  = 640
+	windowHeight = 480
 )
 
 type game struct {
@@ -67,6 +69,7 @@ var demos = []demo{
 	{"Bubbles", bubbles, 0.5, 0.5},
 	{"Fountain", fountain, 0.5, 0.9},
 	{"Vortex", vortex, 0.5, 0.5},
+	{"BOIDS", boids, 0.5, 0.5},
 }
 
 var gravity = twodeeparticles.Vector{0.0, 9.81}
@@ -87,7 +90,7 @@ func main() {
 	}
 
 	ebiten.SetWindowTitle("twodeeparticles Demo")
-	ebiten.SetWindowSize(640, 480)
+	ebiten.SetWindowSize(windowWidth, windowHeight)
 
 	_ = ebiten.RunGame(&g)
 }
@@ -294,7 +297,13 @@ func vortex(rand *rand.Rand) *twodeeparticles.ParticleSystem {
 
 	s.MaxParticles = 150
 
-	s.EmissionRateOverTime = constant(15.0)
+	s.EmissionRateOverTime = func(d time.Duration, delta time.Duration) float64 {
+		if s.NumParticles() >= s.MaxParticles {
+			return 0.0
+		}
+		return 15.0
+	}
+
 	s.LifetimeOverTime = constantDuration(24 * time.Hour)
 
 	s.EmissionPositionOverTime = func(d time.Duration, delta time.Duration) twodeeparticles.Vector {
@@ -339,6 +348,84 @@ func vortex(rand *rand.Rand) *twodeeparticles.ParticleSystem {
 	return s
 }
 
+func boids(rand *rand.Rand) *twodeeparticles.ParticleSystem {
+	s := twodeeparticles.NewParticleSystem()
+
+	s.MaxParticles = 75
+
+	s.EmissionRateOverTime = func(d time.Duration, delta time.Duration) float64 {
+		if s.NumParticles() >= s.MaxParticles {
+			return 0.0
+		}
+		return 1e9
+	}
+	s.LifetimeOverTime = constantDuration(24 * time.Hour)
+
+	s.EmissionPositionOverTime = func(d time.Duration, delta time.Duration) twodeeparticles.Vector {
+		x := randomValue(-windowWidth*0.8/2.0, windowWidth*0.8/2.0, rand)
+		y := randomValue(-windowHeight*0.8/2.0, windowHeight*0.8/2.0, rand)
+		return twodeeparticles.Vector{x, y}
+	}
+
+	s.VelocityOverLifetime = func(p *twodeeparticles.Particle, t twodeeparticles.NormalizedDuration, delta time.Duration) twodeeparticles.Vector {
+		dir, _ := p.Velocity().TryNormalize()
+
+		pos := p.Position()
+
+		coherenceCenter := twodeeparticles.ZeroVector
+		avoidanceCenter := twodeeparticles.ZeroVector
+		vel := twodeeparticles.ZeroVector
+		coherenceNum := 0
+		avoidanceNum := 0
+		p.System().ForEachParticle(func(p *twodeeparticles.Particle, t twodeeparticles.NormalizedDuration, delta time.Duration) {
+			dist := distance(pos, p.Position())
+			if dist <= 50.0 {
+				coherenceCenter = coherenceCenter.Add(p.Position())
+				vel = vel.Add(p.Velocity())
+				coherenceNum++
+			}
+			if dist <= 20 {
+				avoidanceCenter = avoidanceCenter.Add(p.Position())
+				avoidanceNum++
+			}
+		}, time.Unix(0, 0))
+
+		if coherenceNum > 0 {
+			ac := coherenceCenter.Multiply(1.0 / float64(coherenceNum))
+			cd, _ := ac.Add(p.Position().Multiply(-1.0)).TryNormalize()
+			dir, _ = dir.Add(cd).TryNormalize()
+
+			ad, _ := vel.Multiply(1.0 / float64(coherenceNum)).TryNormalize()
+			dir, _ = dir.Add(ad.Multiply(0.8)).TryNormalize()
+		}
+
+		if avoidanceNum > 0 {
+			ac := avoidanceCenter.Multiply(1.0 / float64(avoidanceNum))
+			cd, _ := ac.Add(p.Position().Multiply(-1.0)).TryNormalize()
+			dir, _ = dir.Add(cd.Multiply(0.99).Multiply(-1.0)).TryNormalize()
+		}
+
+		if pos.X < -windowWidth*0.8/2.0 {
+			dir.X = math.Abs(dir.X)
+		}
+		if pos.X > windowWidth*0.8/2.0 {
+			dir.X = -math.Abs(dir.X)
+		}
+		if pos.Y < -windowHeight*0.8/2.0 {
+			dir.Y = math.Abs(dir.Y)
+		}
+		if pos.Y > windowHeight*0.8/2.0 {
+			dir.Y = -math.Abs(dir.Y)
+		}
+
+		return dir.Multiply(150.0)
+	}
+
+	s.ScaleOverLifetime = particleConstantVector(twodeeparticles.Vector{0.25, 0.25})
+
+	return s
+}
+
 func constant(c float64) twodeeparticles.ValueOverTimeFunc {
 	return func(d time.Duration, delta time.Duration) float64 {
 		return c
@@ -370,4 +457,8 @@ func rotate(v twodeeparticles.Vector, a float64) twodeeparticles.Vector {
 	// https://matthew-brett.github.io/teaching/rotation_2d.html
 	sin, cos := math.Sincos(a)
 	return twodeeparticles.Vector{v.X*cos - v.Y*sin, v.X*sin + v.Y*cos}
+}
+
+func distance(v1 twodeeparticles.Vector, v2 twodeeparticles.Vector) float64 {
+	return v1.Add(v2.Multiply(-1.0)).Magnitude()
 }
