@@ -28,12 +28,24 @@ func (v Vector) Magnitude() float64 {
 
 // Normalize returns a vector that has the same direction as v, but whose length is one.
 // In other words, it returns a unit vector with the same direction as v.
+// If v has a length of zero, it will panic.
 func (v Vector) Normalize() Vector {
-	m := v.Magnitude()
-	if m == 0 {
+	n, ok := v.TryNormalize()
+	if !ok {
 		panic(errNormalizeZeroVector)
 	}
-	return Vector{v.X / m, v.Y / m}
+	return n
+}
+
+// TryNormalize returns a vector that has the same direction as v, but whose length is one.
+// In other words, it returns a unit vector with the same direction as v.
+// If v has a length of zero, it will return v and false, else the described result and true.
+func (v Vector) TryNormalize() (Vector, bool) {
+	m := v.Magnitude()
+	if m == 0 {
+		return v, false
+	}
+	return Vector{v.X / m, v.Y / m}, true
 }
 
 // Add returns a vector whose components are component-wise additions of v and v2.
