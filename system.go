@@ -218,15 +218,15 @@ func (s *ParticleSystem) spawnParticle(now time.Time) {
 }
 
 func (s *ParticleSystem) updateParticles(now time.Time) bool {
-	needsMorePassed := false
+	needsMorePasses := false
 	for _, p := range s.particles {
 		p.update(now)
 
 		if !p.alive(now) {
-			needsMorePassed = true
+			needsMorePasses = true
 		}
 	}
-	return needsMorePassed
+	return needsMorePasses
 }
 
 // ForEachParticle calls f for each alive particle in the system. now should usually be time.Now().
