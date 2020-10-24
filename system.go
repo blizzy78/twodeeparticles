@@ -173,17 +173,12 @@ func (s *ParticleSystem) removeDeadParticles(now time.Time) {
 }
 
 func (s *ParticleSystem) spawnParticles(now time.Time) {
-	if s.EmissionRateOverTime == nil {
-		return
+	if s.EmissionRateOverTime != nil {
+		d := s.Duration(now)
+		delta := now.Sub(s.lastUpdateTime)
+		s.particlesToEmit += s.EmissionRateOverTime(d, delta) * delta.Seconds()
 	}
 
-	d := s.Duration(now)
-	delta := now.Sub(s.lastUpdateTime)
-	if delta <= 0 {
-		return
-	}
-
-	s.particlesToEmit += s.EmissionRateOverTime(d, delta) * delta.Seconds()
 	for s.particlesToEmit >= 1 {
 		s.spawnParticle(now)
 		s.particlesToEmit--
@@ -227,6 +222,12 @@ func (s *ParticleSystem) updateParticles(now time.Time) bool {
 		}
 	}
 	return needsMorePasses
+}
+
+// Spawn increases the number of particles to emit on the next Update by num. This can be used
+// to instantly spawn a number of particles at any time, regardless of EmissionRateOverTime.
+func (s *ParticleSystem) Spawn(num int) {
+	s.particlesToEmit += float64(num)
 }
 
 // ForEachParticle calls f for each alive particle in the system. now should usually be time.Now().

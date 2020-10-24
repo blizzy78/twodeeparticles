@@ -22,10 +22,6 @@ func TestParticle_Update(t *testing.T) {
 
 	s.MaxParticles = 1
 
-	s.EmissionRateOverTime = func(d time.Duration, delta time.Duration) float64 {
-		return 10.0
-	}
-
 	s.LifetimeOverTime = func(d time.Duration, delta time.Duration) time.Duration {
 		return 1500 * time.Millisecond
 	}
@@ -64,9 +60,8 @@ func TestParticle_Update(t *testing.T) {
 		deathCalled = true
 	}
 
+	s.Spawn(1)
 	now := time.Now()
-	s.Update(now)
-	now = now.Add(1 * time.Second)
 	s.Update(now)
 
 	var p *Particle
@@ -102,21 +97,12 @@ func TestParticle_Kill(t *testing.T) {
 
 	s.MaxParticles = 1
 
-	spawnMore := true
-	s.EmissionRateOverTime = func(d time.Duration, delta time.Duration) float64 {
-		if !spawnMore {
-			return 0.0
-		}
-		return 10.0
-	}
-
 	s.LifetimeOverTime = func(d time.Duration, delta time.Duration) time.Duration {
 		return 10 * time.Second
 	}
 
+	s.Spawn(1)
 	now := time.Now()
-	s.Update(now)
-	now = now.Add(1 * time.Second)
 	s.Update(now)
 
 	var p *Particle
@@ -126,7 +112,6 @@ func TestParticle_Kill(t *testing.T) {
 
 	p.Kill()
 
-	spawnMore = false
 	now = now.Add(1 * time.Second)
 	s.Update(now)
 

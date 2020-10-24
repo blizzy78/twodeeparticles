@@ -106,7 +106,7 @@ func (g *game) Update() error {
 
 		g.particles = demos[g.demoIndex].createFunc(g.rand)
 	} else if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonRight) {
-		g.particles.Reset()
+		g.particles = demos[g.demoIndex].createFunc(g.rand)
 	}
 
 	return nil
@@ -353,12 +353,6 @@ func boids(rand *rand.Rand) *twodeeparticles.ParticleSystem {
 
 	s.MaxParticles = 75
 
-	s.EmissionRateOverTime = func(d time.Duration, delta time.Duration) float64 {
-		if s.NumParticles() >= s.MaxParticles {
-			return 0.0
-		}
-		return 1e9
-	}
 	s.LifetimeOverTime = constantDuration(24 * time.Hour)
 
 	s.EmissionPositionOverTime = func(d time.Duration, delta time.Duration) twodeeparticles.Vector {
@@ -422,6 +416,8 @@ func boids(rand *rand.Rand) *twodeeparticles.ParticleSystem {
 	}
 
 	s.ScaleOverLifetime = particleConstantVector(twodeeparticles.Vector{0.25, 0.25})
+
+	s.Spawn(s.MaxParticles)
 
 	return s
 }
