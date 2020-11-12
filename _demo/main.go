@@ -72,7 +72,7 @@ var demos = []demo{
 	{"BOIDS", boids, 0.5, 0.5},
 }
 
-var gravity = twodeeparticles.Vector{0.0, 9.81}
+var gravity = twodeeparticles.Vector{0.0, 150}
 
 func main() {
 	dot, _, err := ebitenutil.NewImageFromFile("bubble.png")
@@ -262,14 +262,14 @@ func fountain(rand *rand.Rand) *twodeeparticles.ParticleSystem {
 
 		if t == 0 {
 			a := 2.0 * math.Pi * randomValue(80.0, 100.0, rand) / 360.0
-			s := randomValue(450.0-25.0, 450.0+25.0, rand)
+			s := randomValue(315.0-25.0, 315.0+25.0, rand)
 			dir := angleToDirection(a)
 			v = dir.Multiply(s)
 		} else {
 			v = p.Velocity()
 		}
 
-		return v.Add(gravity.Multiply(30.0 * delta.Seconds()))
+		return v.Add(gravity.Multiply(delta.Seconds()))
 	}
 
 	s.ScaleOverLifetime = particleConstantVector(twodeeparticles.Vector{0.2, 0.2})
