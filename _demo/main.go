@@ -25,7 +25,7 @@ const (
 
 	moveTime         = 2.0
 	moveTimeVariance = 2.0
-	fadeOutTime      = 0.15
+	fadeOutTime      = 0.1
 
 	startPositionMaxDistance = 20.0
 
@@ -91,6 +91,7 @@ func main() {
 
 	ebiten.SetWindowTitle("twodeeparticles Demo")
 	ebiten.SetWindowSize(windowWidth, windowHeight)
+	ebiten.SetVsyncEnabled(false)
 
 	_ = ebiten.RunGame(&g)
 }
