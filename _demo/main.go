@@ -161,7 +161,7 @@ func bubbles(rand *rand.Rand) *twodeeparticles.ParticleSystem {
 		return &bubbleData{}
 	}
 
-	s := twodeeparticles.NewParticleSystem()
+	s := twodeeparticles.NewSystem()
 
 	s.MaxParticles = maxParticles
 
@@ -251,7 +251,7 @@ func bubbles(rand *rand.Rand) *twodeeparticles.ParticleSystem {
 }
 
 func fountain(rand *rand.Rand) *twodeeparticles.ParticleSystem {
-	s := twodeeparticles.NewParticleSystem()
+	s := twodeeparticles.NewSystem()
 
 	s.MaxParticles = 500
 
@@ -294,7 +294,7 @@ func fountain(rand *rand.Rand) *twodeeparticles.ParticleSystem {
 }
 
 func vortex(rand *rand.Rand) *twodeeparticles.ParticleSystem {
-	s := twodeeparticles.NewParticleSystem()
+	s := twodeeparticles.NewSystem()
 
 	s.MaxParticles = 150
 
@@ -350,7 +350,7 @@ func vortex(rand *rand.Rand) *twodeeparticles.ParticleSystem {
 }
 
 func boids(rand *rand.Rand) *twodeeparticles.ParticleSystem {
-	s := twodeeparticles.NewParticleSystem()
+	s := twodeeparticles.NewSystem()
 
 	s.MaxParticles = 75
 

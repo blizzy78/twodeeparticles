@@ -10,7 +10,7 @@ import (
 
 func TestParticle_System(t *testing.T) {
 	is := is.New(t)
-	s := NewParticleSystem()
+	s := NewSystem()
 	p := newParticle(s)
 	is.Equal(p.System(), s)
 }
@@ -18,7 +18,7 @@ func TestParticle_System(t *testing.T) {
 func TestParticle_Update(t *testing.T) {
 	is := is.New(t)
 
-	s := NewParticleSystem()
+	s := NewSystem()
 
 	s.MaxParticles = 1
 
@@ -93,7 +93,7 @@ func TestParticle_Update(t *testing.T) {
 func TestParticle_Kill(t *testing.T) {
 	is := is.New(t)
 
-	s := NewParticleSystem()
+	s := NewSystem()
 
 	s.MaxParticles = 1
 

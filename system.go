@@ -67,9 +67,9 @@ type ParticleSystem struct {
 	// If RotationOverLifetime is nil, particles will not rotate.
 	RotationOverLifetime ParticleValueOverNormalizedTimeFunc
 
-	initOnce        *sync.Once
+	initOnce        sync.Once
 	particles       []*Particle
-	pool            *sync.Pool
+	pool            sync.Pool
 	startTime       time.Time
 	lastUpdateTime  time.Time
 	particlesToEmit float64
@@ -118,11 +118,11 @@ type ParticleVisitFunc func(p *Particle, t NormalizedDuration, delta time.Durati
 // of the longer duration.
 type NormalizedDuration float64
 
-// NewParticleSystem returns a new particle system.
-func NewParticleSystem() *ParticleSystem {
+// NewSystem returns a new particle system.
+func NewSystem() *ParticleSystem {
 	s := &ParticleSystem{
-		initOnce: &sync.Once{},
-		pool:     &sync.Pool{},
+		initOnce: sync.Once{},
+		pool:     sync.Pool{},
 	}
 
 	s.pool.New = func() interface{} {
@@ -259,7 +259,7 @@ func (s *ParticleSystem) Reset() {
 	}
 	s.removeDeadParticles(time.Now())
 
-	s.initOnce = &sync.Once{}
+	s.initOnce = sync.Once{}
 	s.particles = nil
 	s.particlesToEmit = 0.0
 }

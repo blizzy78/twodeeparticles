@@ -10,7 +10,7 @@ import (
 func TestParticleSystem_Reset(t *testing.T) {
 	is := is.New(t)
 
-	s := NewParticleSystem()
+	s := NewSystem()
 
 	s.MaxParticles = 1
 
@@ -30,7 +30,7 @@ func TestParticleSystem_Reset(t *testing.T) {
 func TestParticleSystem_Update_SpawnMoreAfterKill(t *testing.T) {
 	is := is.New(t)
 
-	s := NewParticleSystem()
+	s := NewSystem()
 
 	s.MaxParticles = 1
 
@@ -64,7 +64,7 @@ func TestParticleSystem_Update_SpawnMoreAfterKill(t *testing.T) {
 func TestParticleSystem_Spawn(t *testing.T) {
 	is := is.New(t)
 
-	s := NewParticleSystem()
+	s := NewSystem()
 
 	s.MaxParticles = 1
 
