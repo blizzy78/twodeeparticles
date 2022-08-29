@@ -106,7 +106,7 @@ type ParticleColorOverNormalizedTimeFunc func(p *Particle, t NormalizedDuration,
 // The data from previous updates is passed as old and may be modified and returned. For the first update, nil is
 // passed as the old data. delta is the duration since the last update (for example, the duration since the last
 // GPU frame.)
-type ParticleDataOverNormalizedTimeFunc func(old interface{}, t NormalizedDuration, delta time.Duration) interface{}
+type ParticleDataOverNormalizedTimeFunc func(old any, t NormalizedDuration, delta time.Duration) any
 
 // ParticleVisitFunc is a function that is called for p after p's duration t has passed, when looping over all particles
 // in the system using ParticleSystem.ForEachParticle. delta is the duration since the last update (for example,
@@ -120,148 +120,155 @@ type NormalizedDuration float64
 
 // NewSystem returns a new particle system.
 func NewSystem() *ParticleSystem {
-	s := &ParticleSystem{
+	sys := &ParticleSystem{
 		initOnce: sync.Once{},
 		pool:     sync.Pool{},
 	}
 
-	s.pool.New = func() interface{} {
-		return newParticle(s)
+	sys.pool.New = func() any {
+		return newParticle(sys)
 	}
 
-	return s
+	return sys
 }
 
 // Update updates the system. now should usually be time.Now().
-func (s *ParticleSystem) Update(now time.Time) {
-	s.initOnce.Do(func() {
-		s.init(now)
+func (sys *ParticleSystem) Update(now time.Time) {
+	sys.initOnce.Do(func() {
+		sys.init(now)
 	})
 
 	defer func() {
-		s.lastUpdateTime = now
+		sys.lastUpdateTime = now
 	}()
 
 	for {
-		s.removeDeadParticles(now)
-		s.spawnParticles(now)
-		if !s.updateParticles(now) {
+		sys.removeDeadParticles(now)
+		sys.spawnParticles(now)
+
+		if !sys.updateParticles(now) {
 			break
 		}
 	}
 }
 
-func (s *ParticleSystem) init(now time.Time) {
-	s.startTime = now
-	s.lastUpdateTime = now
+func (sys *ParticleSystem) init(now time.Time) {
+	sys.startTime = now
+	sys.lastUpdateTime = now
 }
 
-func (s *ParticleSystem) removeDeadParticles(now time.Time) {
-	for i := len(s.particles) - 1; i >= 0; i-- {
-		p := s.particles[i]
-		if p.alive(now) {
+func (sys *ParticleSystem) removeDeadParticles(now time.Time) {
+	for idx := len(sys.particles) - 1; idx >= 0; idx-- {
+		part := sys.particles[idx]
+		if part.alive(now) {
 			continue
 		}
 
-		s.particles = append(s.particles[:i], s.particles[i+1:]...)
-		s.pool.Put(p)
+		sys.particles = append(sys.particles[:idx], sys.particles[idx+1:]...)
+		sys.pool.Put(part)
 
-		if s.DeathFunc != nil {
-			s.DeathFunc(p)
+		if sys.DeathFunc != nil {
+			sys.DeathFunc(part)
 		}
 	}
 }
 
-func (s *ParticleSystem) spawnParticles(now time.Time) {
-	if s.EmissionRateOverTime != nil {
-		d := s.Duration(now)
-		delta := now.Sub(s.lastUpdateTime)
-		s.particlesToEmit += s.EmissionRateOverTime(d, delta) * delta.Seconds()
+func (sys *ParticleSystem) spawnParticles(now time.Time) {
+	if sys.EmissionRateOverTime != nil {
+		d := sys.Duration(now)
+		delta := now.Sub(sys.lastUpdateTime)
+		sys.particlesToEmit += sys.EmissionRateOverTime(d, delta) * delta.Seconds()
 	}
 
-	for s.particlesToEmit >= 1 {
-		s.spawnParticle(now)
-		s.particlesToEmit--
+	for sys.particlesToEmit >= 1 {
+		sys.spawnParticle(now)
+		sys.particlesToEmit--
 	}
 }
 
-func (s *ParticleSystem) spawnParticle(now time.Time) {
-	if len(s.particles) >= s.MaxParticles {
+func (sys *ParticleSystem) spawnParticle(now time.Time) {
+	if len(sys.particles) >= sys.MaxParticles {
 		return
 	}
 
-	p := s.pool.Get().(*Particle)
+	part := sys.pool.Get().(*Particle) //nolint:forcetypeassert // we know this is a *Particle
 
-	p.reset()
+	part.reset()
 
-	d := s.Duration(now)
-	delta := now.Sub(s.lastUpdateTime)
-	if s.LifetimeOverTime != nil {
-		p.lifetime = s.LifetimeOverTime(d, delta)
+	dur := sys.Duration(now)
+	delta := now.Sub(sys.lastUpdateTime)
+
+	if sys.LifetimeOverTime != nil {
+		part.lifetime = sys.LifetimeOverTime(dur, delta)
 	} else {
-		p.lifetime = 1 * time.Second
-	}
-	p.birthTime = now
-	p.deathTime = now.Add(p.lifetime)
-	p.lastUpdateTime = now
-
-	if s.EmissionPositionOverTime != nil {
-		p.position = s.EmissionPositionOverTime(d, delta)
+		part.lifetime = 1 * time.Second
 	}
 
-	s.particles = append(s.particles, p)
+	part.birthTime = now
+	part.deathTime = now.Add(part.lifetime)
+	part.lastUpdateTime = now
+
+	if sys.EmissionPositionOverTime != nil {
+		part.position = sys.EmissionPositionOverTime(dur, delta)
+	}
+
+	sys.particles = append(sys.particles, part)
 }
 
-func (s *ParticleSystem) updateParticles(now time.Time) bool {
+func (sys *ParticleSystem) updateParticles(now time.Time) bool {
 	needsMorePasses := false
-	for _, p := range s.particles {
+
+	for _, p := range sys.particles {
 		p.update(now)
 
 		if !p.alive(now) {
 			needsMorePasses = true
 		}
 	}
+
 	return needsMorePasses
 }
 
 // Spawn increases the number of particles to emit on the next Update by num. This can be used
 // to instantly spawn a number of particles at any time, regardless of EmissionRateOverTime.
-func (s *ParticleSystem) Spawn(num int) {
-	s.particlesToEmit += float64(num)
+func (sys *ParticleSystem) Spawn(num int) {
+	sys.particlesToEmit += float64(num)
 }
 
-// ForEachParticle calls f for each alive particle in the system. now should usually be time.Now().
-func (s *ParticleSystem) ForEachParticle(f ParticleVisitFunc, now time.Time) {
-	delta := now.Sub(s.lastUpdateTime)
-	for _, p := range s.particles {
+// ForEachParticle calls fun for each alive particle in the system. now should usually be time.Now().
+func (sys *ParticleSystem) ForEachParticle(fun ParticleVisitFunc, now time.Time) {
+	delta := now.Sub(sys.lastUpdateTime)
+
+	for _, p := range sys.particles {
 		d := p.duration(now)
 		t := NormalizedDuration(d.Seconds() / p.lifetime.Seconds())
-		f(p, t, delta)
+		fun(p, t, delta)
 	}
 }
 
 // Duration returns the duration of the system at now, that is, how long the system has been active.
 // now should usually be time.Now().
-func (s *ParticleSystem) Duration(now time.Time) time.Duration {
-	return now.Sub(s.startTime)
+func (sys *ParticleSystem) Duration(now time.Time) time.Duration {
+	return now.Sub(sys.startTime)
 }
 
 // NumParticles returns the number of alive particles.
-func (s *ParticleSystem) NumParticles() int {
-	return len(s.particles)
+func (sys *ParticleSystem) NumParticles() int {
+	return len(sys.particles)
 }
 
 // Reset kills all alive particles and completely resets the system.
 // DeathFunc will be called for all particles that were alive.
-func (s *ParticleSystem) Reset() {
-	for _, p := range s.particles {
+func (sys *ParticleSystem) Reset() {
+	for _, p := range sys.particles {
 		p.Kill()
 	}
-	s.removeDeadParticles(time.Now())
 
-	s.initOnce = sync.Once{}
-	s.particles = nil
-	s.particlesToEmit = 0.0
+	sys.removeDeadParticles(time.Now())
+
+	sys.initOnce = sync.Once{}
+	sys.particles = nil
+	sys.particlesToEmit = 0.0
 }
 
 // Duration converts t to a duration with respect to the longer duration m.

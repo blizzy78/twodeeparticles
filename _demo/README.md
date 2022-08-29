@@ -1,5 +1,5 @@
-twodeeparticles Ebiten Demo
-===========================
+twodeeparticles Ebitengine Demo
+===============================
 
 To run this demo:
 

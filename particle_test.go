@@ -18,74 +18,76 @@ func TestParticle_System(t *testing.T) {
 func TestParticle_Update(t *testing.T) {
 	is := is.New(t)
 
-	s := NewSystem()
+	sys := NewSystem()
 
-	s.MaxParticles = 1
+	sys.MaxParticles = 1
 
-	s.LifetimeOverTime = func(d time.Duration, delta time.Duration) time.Duration {
+	sys.LifetimeOverTime = func(d time.Duration, delta time.Duration) time.Duration {
 		return 1500 * time.Millisecond
 	}
 
-	s.DataOverLifetime = func(old interface{}, t NormalizedDuration, delta time.Duration) interface{} {
+	sys.DataOverLifetime = func(old any, t NormalizedDuration, delta time.Duration) any {
 		return "data"
 	}
 
-	s.EmissionPositionOverTime = func(d time.Duration, delta time.Duration) Vector {
+	sys.EmissionPositionOverTime = func(d time.Duration, delta time.Duration) Vector {
 		return Vector{17, 23}
 	}
 
-	s.VelocityOverLifetime = func(p *Particle, t NormalizedDuration, delta time.Duration) Vector {
+	sys.VelocityOverLifetime = func(p *Particle, t NormalizedDuration, delta time.Duration) Vector {
 		return Vector{3, 5}
 	}
 
-	s.ScaleOverLifetime = func(p *Particle, t NormalizedDuration, delta time.Duration) Vector {
+	sys.ScaleOverLifetime = func(p *Particle, t NormalizedDuration, delta time.Duration) Vector {
 		return Vector{7, 11}
 	}
 
-	s.ColorOverLifetime = func(p *Particle, t NormalizedDuration, delta time.Duration) color.Color {
+	sys.ColorOverLifetime = func(p *Particle, t NormalizedDuration, delta time.Duration) color.Color {
 		return color.RGBA{0x12, 0x23, 0x34, 0x45}
 	}
 
-	s.RotationOverLifetime = func(p *Particle, t NormalizedDuration, delta time.Duration) float64 {
+	sys.RotationOverLifetime = func(p *Particle, t NormalizedDuration, delta time.Duration) float64 {
 		return 0.123
 	}
 
 	updateCalled := false
-	s.UpdateFunc = func(part *Particle, t NormalizedDuration, delta time.Duration) {
+	sys.UpdateFunc = func(part *Particle, t NormalizedDuration, delta time.Duration) {
 		updateCalled = true
 	}
 
 	deathCalled := false
-	s.DeathFunc = func(p *Particle) {
+	sys.DeathFunc = func(p *Particle) {
 		deathCalled = true
 	}
 
-	s.Spawn(1)
-	now := time.Now()
-	s.Update(now)
+	sys.Spawn(1)
 
-	var p *Particle
-	s.ForEachParticle(func(part *Particle, t NormalizedDuration, delta time.Duration) {
-		p = part
+	now := time.Now()
+	sys.Update(now)
+
+	var part *Particle
+
+	sys.ForEachParticle(func(p *Particle, t NormalizedDuration, delta time.Duration) {
+		part = p
 	}, now)
 
-	is.Equal(p.Data(), "data")
-	is.Equal(p.Position(), Vector{17, 23})
-	is.Equal(p.Velocity(), Vector{3, 5})
-	is.Equal(p.Scale(), Vector{7, 11})
-	is.Equal(p.Color(), color.RGBA{0x12, 0x23, 0x34, 0x45})
-	is.Equal(p.Angle(), 0.0)
-	is.Equal(p.Lifetime(), 1500*time.Millisecond)
+	is.Equal(part.Data(), "data")
+	is.Equal(part.Position(), Vector{17, 23})
+	is.Equal(part.Velocity(), Vector{3, 5})
+	is.Equal(part.Scale(), Vector{7, 11})
+	is.Equal(part.Color(), color.RGBA{0x12, 0x23, 0x34, 0x45})
+	is.Equal(part.Angle(), 0.0)
+	is.Equal(part.Lifetime(), 1500*time.Millisecond)
 	is.True(updateCalled)
 
 	now = now.Add(1 * time.Second)
-	s.Update(now)
+	sys.Update(now)
 
-	is.Equal(p.Position(), Vector{17, 23}.Add(Vector{3, 5}))
-	is.Equal(p.Angle(), 0.123)
+	is.Equal(part.Position(), Vector{17, 23}.Add(Vector{3, 5}))
+	is.Equal(part.Angle(), 0.123)
 
 	now = now.Add(1 * time.Second)
-	s.Update(now)
+	sys.Update(now)
 
 	is.True(deathCalled)
 }
@@ -93,27 +95,29 @@ func TestParticle_Update(t *testing.T) {
 func TestParticle_Kill(t *testing.T) {
 	is := is.New(t)
 
-	s := NewSystem()
+	sys := NewSystem()
 
-	s.MaxParticles = 1
+	sys.MaxParticles = 1
 
-	s.LifetimeOverTime = func(d time.Duration, delta time.Duration) time.Duration {
+	sys.LifetimeOverTime = func(d time.Duration, delta time.Duration) time.Duration {
 		return 10 * time.Second
 	}
 
-	s.Spawn(1)
-	now := time.Now()
-	s.Update(now)
+	sys.Spawn(1)
 
-	var p *Particle
-	s.ForEachParticle(func(part *Particle, t NormalizedDuration, delta time.Duration) {
-		p = part
+	now := time.Now()
+	sys.Update(now)
+
+	var part *Particle
+
+	sys.ForEachParticle(func(p *Particle, t NormalizedDuration, delta time.Duration) {
+		part = p
 	}, now)
 
-	p.Kill()
+	part.Kill()
 
 	now = now.Add(1 * time.Second)
-	s.Update(now)
+	sys.Update(now)
 
-	is.Equal(s.NumParticles(), 0)
+	is.Equal(sys.NumParticles(), 0)
 }

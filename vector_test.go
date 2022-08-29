@@ -17,15 +17,16 @@ func TestVector_TryNormalize(t *testing.T) {
 
 	v := Vector{17, 23}
 	m := v.Magnitude()
-	n, ok := v.TryNormalize()
-	is.Equal(n.X, v.X/m)
-	is.Equal(n.Y, v.Y/m)
-	is.Equal(n.Magnitude(), 1.0)
+
+	norm, ok := v.TryNormalize()
+	is.Equal(norm.X, v.X/m)
+	is.Equal(norm.Y, v.Y/m)
+	is.Equal(norm.Magnitude(), 1.0)
 	is.True(ok)
 
 	v = Vector{0, 0}
-	n, ok = v.TryNormalize()
-	is.Equal(v, n)
+	norm, ok = v.TryNormalize()
+	is.Equal(v, norm)
 	is.True(!ok)
 }
 

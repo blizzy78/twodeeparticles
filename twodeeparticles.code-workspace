@@ -3,5 +3,11 @@
 		{
 			"path": "."
 		}
-	]
+	],
+	"extensions": {
+		"recommendations": [
+			"EditorConfig.EditorConfig",
+			"golang.go"
+		]
+	}
 }

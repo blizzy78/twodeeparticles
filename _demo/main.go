@@ -157,7 +157,7 @@ func (g *game) drawParticle(screen *ebiten.Image, p *twodeeparticles.Particle, t
 
 func bubbles(rand *rand.Rand) *twodeeparticles.ParticleSystem {
 	particleDataPool := &sync.Pool{}
-	particleDataPool.New = func() interface{} {
+	particleDataPool.New = func() any {
 		return &bubbleData{}
 	}
 
@@ -165,7 +165,7 @@ func bubbles(rand *rand.Rand) *twodeeparticles.ParticleSystem {
 
 	s.MaxParticles = maxParticles
 
-	s.DataOverLifetime = func(old interface{}, t twodeeparticles.NormalizedDuration, delta time.Duration) interface{} {
+	s.DataOverLifetime = func(old any, t twodeeparticles.NormalizedDuration, delta time.Duration) any {
 		if old != nil {
 			return old
 		}

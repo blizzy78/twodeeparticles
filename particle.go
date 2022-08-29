@@ -15,7 +15,7 @@ type Particle struct {
 	lastUpdateTime time.Time
 
 	isAlive  bool
-	data     interface{}
+	data     any
 	position Vector
 	velocity Vector
 	scale    Vector
@@ -23,9 +23,9 @@ type Particle struct {
 	color    color.Color
 }
 
-func newParticle(s *ParticleSystem) *Particle {
+func newParticle(sys *ParticleSystem) *Particle {
 	return &Particle{
-		system: s,
+		system: sys,
 		color:  color.White,
 	}
 }
@@ -36,7 +36,7 @@ func (p *Particle) System() *ParticleSystem {
 }
 
 // Data returns the arbitrary data that has been assigned to p (see ParticleSystem.DataOverLifetime.)
-func (p *Particle) Data() interface{} {
+func (p *Particle) Data() any {
 	return p.data
 }
 

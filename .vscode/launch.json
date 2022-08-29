@@ -5,14 +5,12 @@
 	"version": "0.2.0",
 	"configurations": [
 		{
-			"name": "Launch",
+			"name": "Demo",
 			"type": "go",
 			"request": "launch",
-			"mode": "auto",
-			"program": "${workspaceFolder}",
-			"cwd": "${workspaceFolder}",
-			"env": {},
-			"args": []
+			"mode": "debug",
+			"program": "${workspaceFolder}/_demo",
+			"cwd": "${workspaceFolder}/_demo"
 		}
 	]
 }

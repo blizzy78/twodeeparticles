@@ -10,69 +10,73 @@ import (
 func TestParticleSystem_Reset(t *testing.T) {
 	is := is.New(t)
 
-	s := NewSystem()
+	sys := NewSystem()
 
-	s.MaxParticles = 1
+	sys.MaxParticles = 1
 
-	s.LifetimeOverTime = func(d time.Duration, delta time.Duration) time.Duration {
+	sys.LifetimeOverTime = func(d time.Duration, delta time.Duration) time.Duration {
 		return 10 * time.Second
 	}
 
-	s.Spawn(1)
+	sys.Spawn(1)
+
 	now := time.Now()
-	s.Update(now)
+	sys.Update(now)
 
-	s.Reset()
+	sys.Reset()
 
-	is.Equal(s.NumParticles(), 0)
+	is.Equal(sys.NumParticles(), 0)
 }
 
 func TestParticleSystem_Update_SpawnMoreAfterKill(t *testing.T) {
 	is := is.New(t)
 
-	s := NewSystem()
+	sys := NewSystem()
 
-	s.MaxParticles = 1
+	sys.MaxParticles = 1
 
-	s.EmissionRateOverTime = func(d time.Duration, delta time.Duration) float64 {
+	sys.EmissionRateOverTime = func(d time.Duration, delta time.Duration) float64 {
 		return 1.0
 	}
 
-	s.LifetimeOverTime = func(d time.Duration, delta time.Duration) time.Duration {
+	sys.LifetimeOverTime = func(d time.Duration, delta time.Duration) time.Duration {
 		return 10 * time.Second
 	}
 
-	s.Spawn(1)
+	sys.Spawn(1)
+
 	now := time.Now()
-	s.Update(now)
+	sys.Update(now)
 
 	killCalled := false
-	s.UpdateFunc = func(p *Particle, t NormalizedDuration, delta time.Duration) {
+	sys.UpdateFunc = func(p *Particle, t NormalizedDuration, delta time.Duration) {
 		if t > 0 {
 			killCalled = true
+
 			p.Kill()
 		}
 	}
 
 	now = now.Add(1 * time.Second)
-	s.Update(now)
+	sys.Update(now)
 
-	is.Equal(s.NumParticles(), 1)
+	is.Equal(sys.NumParticles(), 1)
 	is.True(killCalled)
 }
 
 func TestParticleSystem_Spawn(t *testing.T) {
 	is := is.New(t)
 
-	s := NewSystem()
+	sys := NewSystem()
 
-	s.MaxParticles = 1
+	sys.MaxParticles = 1
 
-	s.Spawn(1)
+	sys.Spawn(1)
+
 	now := time.Now()
-	s.Update(now)
+	sys.Update(now)
 
-	is.Equal(s.NumParticles(), 1)
+	is.Equal(sys.NumParticles(), 1)
 }
 
 func TestNormalizedDuration_Duration(t *testing.T) {

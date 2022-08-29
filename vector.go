@@ -34,6 +34,7 @@ func (v Vector) Normalize() Vector {
 	if !ok {
 		panic(errNormalizeZeroVector)
 	}
+
 	return n
 }
 
@@ -41,11 +42,12 @@ func (v Vector) Normalize() Vector {
 // In other words, it returns a unit vector with the same direction as v.
 // If v has a length of zero, it will return v and false, else the described result and true.
 func (v Vector) TryNormalize() (Vector, bool) {
-	m := v.Magnitude()
-	if m == 0 {
+	mag := v.Magnitude()
+	if mag == 0 {
 		return v, false
 	}
-	return Vector{v.X / m, v.Y / m}, true
+
+	return Vector{v.X / mag, v.Y / mag}, true
 }
 
 // Add returns a vector whose components are component-wise additions of v and v2.
